@@ -1,4 +1,5 @@
 import json
+import os
 
 def look_for_num(asi, data, number_type):
         for i in range(len(data)):
