@@ -1,57 +1,44 @@
 import json
 import os
 
-def lookfornum(asi):
-    with open("accounts.json", "r") as jsonfile:
-        data = json.load(jsonfile)
+def look_for_num(asi, data, number_type):
         for i in range(len(data)):
-            if int(data[i]["accountNumber"])==asi:
-                return i
-        print(len(data))
-        return None
+            if data[i][number_type] == asi:
+                return True
+        return False
+    
+def load_file():
+    try:
+        with open ("accounts.json" "r") as file:
+            data = json.load(file)
+    except Exception:
+        print("File Not Found")
+        return []
+    return data
 
+def sign_in(file):
+     while True:
+        try:
+            acc_num = input("Enter account number: ")
+            pin_num = input("Enter PIN number: ")
+            acc_check = look_for_num(acc_num, file, "accountNumber")
+            pin_check = look_for_num(pin_num, file, "pin")
+            if acc_check and pin_check:
+                return True
+            else:
+                print("invalid account/PIN number")
+        except:
+            print("invalid account/PIN number")
 
 def main():
-    brreak=0
-    notfound=0
-    if os.path.exists("accounts.json"):
-        notfound=0
+    file = load_file()
+    if file != []:
+        account = sign_in(file)
+        if account:
+            pass
     else:
-        print("accounts file not found")
-        notfound=1
-    if notfound==0:
-        while True:
-            if brreak==1:
-                break
-            try:
-                asi=int(input("Enter account number: -"))
-                datanum=lookfornum(asi)
-                print(datanum)
-                if datanum!=None:
-                    while True:
-                        try:
-                            pin=int(input("Enter pin number: -"))
-                            with open("accounts.json", "r") as jsonfile:
-                                data = json.load(jsonfile)
-                            if int(data[datanum]["pin"])==pin:
-                                brreak=1
-                                break
-                            else:
-                                print("invalid pin number")
-                        except:
-                            print("invalid pin number")
-                else:
-                    print("invalid account number")
-            except:
-                print("invalid account number")
-    if notfound==0:
-        print("""Please select a number for the action you want performed
-    1) Deposit
-    2) Withdraw
-    3) View balance
-    4) Exit ATM program
-    """)
-        #continue here
+        print("Accounts File Not Found.")
+    #continue here
 
 
 if __name__=="__main__":
