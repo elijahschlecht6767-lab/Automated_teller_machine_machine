@@ -1,5 +1,49 @@
 import json
-import os
+
+def view_balance(data, account):
+    while True:
+        try:
+            print("Which account would you like to view?\nPlease select a number for the action you want performed\n1) Checking\n2) Savings")
+            choice=int(input("-"))
+            if choice==1:
+                balance="checkingBalance"
+                baltyp="Checking"
+            elif choice==2:
+                balance="savingsBalance"
+                baltyp="Savings"
+            elif choice<1 or choice>2:
+                print("Invalid number, please try again")
+                continue
+            print(f"{baltyp} account has ${data[account][balance]}")
+        except:
+            print("Error")
+        print("Invalid choice, please re-select")
+
+def withdraw(data, account):
+    while True:
+        try:
+            print("Which account do you want to withdraw from?\nPlease select a number for the action you want performed\n1) Checking\n2) Savings")
+            choice=int(input("-"))
+            if choice==1:
+                balance="checkingBalance"
+                baltyp="Checking"
+            elif choice==2:
+                balance="savingsBalance"
+                baltyp="Savings"
+            elif choice<1 or choice>2:
+                print("Invalid number, please try again")
+                continue
+            amm=float(input("Enter the ammount you would like to withdraw (without $ sign) -"))
+            data[account]["transactions"].append(f"Withdraw from {baltyp} in amount of ${amm:.2f}")
+            data[account][balance]-=amm
+            with open("accounts.json", "w") as json_file:
+                json.dump(data, json_file, indent=4)
+            print(f"You've withdrawn ${amm:.2f} from your {baltyp} account")
+            break
+        except:
+            print("Error")
+        print("Invalid number, please try again")
+
 
 def deposit(data, account):
     while True:
@@ -20,6 +64,8 @@ def deposit(data, account):
             data[account][balance]+=amm
             with open("accounts.json", "w") as json_file:
                 json.dump(data, json_file, indent=4)
+            print(f"You've deposited ${amm:.2f} into your {baltyp} account")
+            break
         except:
             print("Error")
         print("Invalid number, please try again")
@@ -30,13 +76,13 @@ def menu_pick(data, account):
         try:
             choice=int(input("-"))
             if choice==1:
-                deposit(data, account)
+                data=deposit(data, account)
                 return False
             elif choice==2:
-                withdraw(data, account)#unfinished
+                data=withdraw(data, account)
                 return False
             elif choice==3:
-                view_balance(data, account)#unfinished
+                data=view_balance(data, account)
                 return False
             elif choice==4:
                 return True
@@ -91,13 +137,14 @@ def main():
         account = sign_in(data)
         while True:
             print("""Please select a number for the action you want performed
-        1) Deposit
-        2) Withdraw
-        3) View balance
-        4) Exit ATM program
-        """)
+1) Deposit
+2) Withdraw
+3) View balance
+4) Exit ATM program""")
+            data=load_file()
             exit=menu_pick(data, account)
             if exit==True:
+                print("Good bye")
                 break
     else:
         print("Accounts File Not Found.")
