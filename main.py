@@ -15,9 +15,20 @@ def view_balance(data, account):
                 print("Invalid number, please try again")
                 continue
             print(f"{baltyp} account has ${data[account][balance]}")
+            break
         except:
             print("Error")
         print("Invalid choice, please re-select")
+
+def view_transactions(data, account):
+    while True:
+        try:
+            for i in data[account]["transactions"]:
+                print(i)
+            input("-")
+            break
+        except:
+            print("Error")
 
 def withdraw(data, account):
     while True:
@@ -33,7 +44,12 @@ def withdraw(data, account):
             elif choice<1 or choice>2:
                 print("Invalid number, please try again")
                 continue
-            amm=float(input("Enter the ammount you would like to withdraw (without $ sign) -"))
+
+            while True:
+                amm=float(input("Enter the ammount you would like to withdraw (without $ sign) -"))
+                if amm > 0 and amm <= data[account][balance]:
+                    break
+
             data[account]["transactions"].append(f"Withdraw from {baltyp} in amount of ${amm:.2f}")
             data[account][balance]-=amm
             with open("accounts.json", "w") as json_file:
@@ -59,7 +75,10 @@ def deposit(data, account):
             elif choice<1 or choice>2:
                 print("Invalid number, please try again")
                 continue
-            amm=float(input("Enter the ammount you would like to deposit (without $ sign) -"))
+            while True:
+                amm=float(input("Enter the ammount you would like to deposit (without $ sign) -"))
+                if amm > 0:
+                    break
             data[account]["transactions"].append(f"Deposit into {baltyp} in amount of ${amm:.2f}")
             data[account][balance]+=amm
             with open("accounts.json", "w") as json_file:
@@ -74,18 +93,23 @@ def deposit(data, account):
 def menu_pick(data, account):
     while True:
         try:
-            choice=int(input("-"))
-            if choice==1:
+            choice=input("-")
+            if choice=="1":
                 data=deposit(data, account)
-                return False
-            elif choice==2:
+                return False, False
+            elif choice=="2":
                 data=withdraw(data, account)
-                return False
-            elif choice==3:
+                return False, False
+            elif choice=="3":
                 data=view_balance(data, account)
-                return False
-            elif choice==4:
-                return True
+                return False, False
+            elif choice=="4":
+                data=view_transactions(data, account)
+                return False, False
+            elif choice == "5":
+                return True, False
+            elif choice == "q":
+                return True, True
         except:
             print("Error")
         print("invalid choice, please try again")
@@ -120,31 +144,50 @@ def load_file():
 def sign_in(data):
     while True:
         try:
-            acc_num = input("Enter account number: ")
-            pin_num = input("Enter PIN number: ")
+            acc_num = input("Enter account number (q to quit): ")
+            if acc_num == "q":
+                quit = True
+                break
+            pin_num = input("Enter PIN number (q to quit): ")
+            if pin_num == "q":
+                quit = True
+                break
             account = get_acc(acc_num, pin_num, data)
             if account!=None:
+                quit = False
                 break
         except:
             print("Error")
         print("invalid account/PIN number, please try again")
-    return account
+    if quit:
+        return "quit"
+    else:
+        return account
 
 
 def main():
     data = load_file()
     if data != []:
-        account = sign_in(data)
         while True:
-            print("""Please select a number for the action you want performed
+            account = sign_in(data)
+            if account != "quit":
+                while True:
+                    print(f"""Welcome {data[account]["firstName"]} {data[account]["lastName"]}!
+Please select a number for the action you want performed
 1) Deposit
 2) Withdraw
-3) View balance
-4) Exit ATM program""")
-            data=load_file()
-            exit=menu_pick(data, account)
-            if exit==True:
-                print("Good bye")
+3) Check balance
+4) View Transactions
+5) logout
+q) Quit""")
+                    data=load_file()
+                    exit=menu_pick(data, account)
+                    if exit[0]==True:
+                        print("Good bye")
+                        break
+                if exit[1]:
+                    break
+            else:
                 break
     else:
         print("Accounts File Not Found.")
